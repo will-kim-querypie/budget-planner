@@ -1,0 +1,222 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: #f5f5f5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  --app-header-height: 76px;
+}
+
+body > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: var(--app-header-height);
+}
+
+body > header > h1 {
+  color: #3f51b5;
+}
+
+body > main {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  padding: 20px;
+  height: calc(100vh - var(--app-header-height));
+  overflow: hidden;
+}
+
+#app {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0 20px 20px 20px;
+  overflow-y: auto;
+}
+
+#app::-webkit-scrollbar {
+  width: 8px;
+}
+
+#app::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+#app::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+#app::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+label {
+  font-size: 1rem;
+  color: #333;
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+button {
+  background-color: #3f51b5;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+button:hover {
+  background-color: #303f9f;
+}
+
+.income-section {
+  max-width: 400px;
+  background: white;
+  padding: 15px 0;
+  margin-bottom: 15px;
+}
+
+.income-section #totalAmountContainer {
+  margin-top: 4px;
+}
+
+.category {
+  position: relative;
+  margin-top: 15px;
+}
+
+.category-header {
+  position: sticky;
+  top: 0;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-header label {
+  margin: 0;
+  flex: 1;
+}
+
+.category-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  grid-template-rows: repeat(auto-fill, minmax(max-content, 1fr));
+  grid-auto-rows: max-content;
+  grid-auto-flow: row dense;
+  gap: 1.33rem 1rem;
+  padding: 0 15px;
+}
+
+.subcategory {
+  position: relative;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 4px;
+  background-color: #eef5ff;
+}
+
+.subcategory:only-child .remove-btn {
+  display: none;
+}
+
+.percentage {
+  color: #3f51b5;
+  font-weight: bold;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 15px;
+  background-color: #f44336;
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+}
+
+.remove-btn:hover {
+  background-color: #d32f2f;
+}
+
+#visualization {
+  flex: 1;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chart-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.chart-tab {
+  padding: 8px 16px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.chart-tab.active {
+  background-color: #3f51b5;
+  color: white;
+}
+
+.chart-view {
+  display: none;
+  height: 100%;
+}
+
+.chart-view.active {
+  display: block;
+}
+
+/* 기존 .chart-container 스타일 수정 */
+.chart-container {
+  height: calc(100% - 50px); /* 탭 영역 고려 */
+  position: relative;
+  padding: 10px;
+}
