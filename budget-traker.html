@@ -377,7 +377,7 @@
                                     label: function(context) {
                                         const label = context.label || '';
                                         const value = context.raw || 0;
-                                        const total = context.dataset.data.reduce((a, b) => a + parseFloat(b), 0);
+                                        const total = context.dataset.data.reduce((a, b) => safetyAdd(a, parseFloat(b)), 0);
                                         const amount = context.dataset._meta?.amount?.[context.dataIndex] || 0;
                                         return `${label}: ${value}% (${amount}만원)`;
                                     }
@@ -417,7 +417,7 @@
             updateCharts() {
                 const categoryData = this.categories.map(category => {
                     const total = category.subcategories.reduce((sum, sub) => {
-                        return sum + (parseFloat(sub.amountInput.value) || 0);
+                        return safetyAdd(sum, (parseFloat(sub.amountInput.value) || 0));
                     }, 0);
 
                     return {
@@ -510,9 +510,9 @@
             updateTotalAmount() {
                 // 모든 서브카테고리 금액을 합산
                 const totalAmount = this.categories.reduce((sum, category) => {
-                    return sum + category.subcategories.reduce((subSum, sub) => {
-                        return subSum + (parseFloat(sub.amountInput.value) || 0);
-                    }, 0);
+                    return safetyAdd(sum, category.subcategories.reduce((subSum, sub) => {
+                        return safetyAdd(subSum, (parseFloat(sub.amountInput.value) || 0))
+                    }, 0))
                 }, 0);
 
                 const income = parseFloat(this.incomeInput.value) || 0;
@@ -630,7 +630,7 @@
             }
 
             updatePercentage(income) {
-                const total = this.subcategories.reduce((sum, sub) => sum + (parseFloat(sub.amountInput.value) * 10000 || 0), 0);
+                const total = this.subcategories.reduce((sum, sub) => safetyAdd(sum, (parseFloat(sub.amountInput.value) * 10000 || 0)), 0);
                 const percentage = income ? ((total / income) * 100).toFixed(2) : 0;
                 this.percentageSpan.textContent = `(${percentage}%)`;
             }
@@ -683,6 +683,10 @@
             get hasContent() {
                 return !!this.input.value || !!this.amountInput.value;
             }
+        }
+
+        function safetyAdd(a, b) {
+            return (a * 100 - b * 100) / 100;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
