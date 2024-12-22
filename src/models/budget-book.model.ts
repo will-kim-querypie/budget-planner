@@ -1,5 +1,5 @@
-import Category from "./category.model";
-import type { JSONSerializable } from "./serializable.model";
+import Category from "src/models/category.model.ts";
+import type { JSONSerializable } from "src/models/serializable.model.ts";
 
 export default class BudgetBook implements JSONSerializable<BudgetBook> {
   private constructor(

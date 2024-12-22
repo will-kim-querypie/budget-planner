@@ -1,5 +1,5 @@
-import type { JSONSerializable } from "./serializable.model";
-import SubCategory from "./sub-category.model";
+import type { JSONSerializable } from "src/models/serializable.model.ts";
+import SubCategory from "src/models/sub-category.model.ts";
 
 export default class Category implements JSONSerializable<Category> {
   uuid: string;

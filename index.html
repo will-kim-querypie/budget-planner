@@ -1,35 +1,12 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>예산 추적기</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
-    <script src="index.js" defer></script>
-</head>
-<body>
-    <header>
-        <h1>월간 예산 추적기</h1>
-    </header>
-    <main>
-        <div id="app"></div>
-        <div id="visualization">
-            <div class="chart-tabs">
-                <button class="chart-tab active" data-chart="pie">파이 차트</button>
-                <button class="chart-tab" data-chart="bar">바 차트</button>
-            </div>
-            <div class="chart-view active" id="pieChartView">
-                <div class="chart-container">
-                    <canvas id="pieChart"></canvas>
-                </div>
-            </div>
-            <div class="chart-view" id="barChartView">
-                <div class="chart-container">
-                    <canvas id="barChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </main>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>가계부</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
