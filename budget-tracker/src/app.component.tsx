@@ -1,8 +1,9 @@
 export default function App() {
   return (
-    <div>
-      <h1>My App</h1>
-      <p>My app is running!</p>
-    </div>
+    <>
+      <header>
+        <h1>월간 예산 추적기</h1>
+      </header>
+    </>
   );
 }
