@@ -1,11 +1,12 @@
 import safetyAdd from "../utils/safety-add";
 import ObservableImpl  from "./observable.model";
+import type { Disposable } from "./disposable.model";
 import type { JSONSerializable } from "./serializable.model";
 import SubCategory from "./sub-category.model";
 
 type ObservableFields = Pick<Category, 'name' | 'subCategories'>;
 
-export default class Category extends ObservableImpl<ObservableFields> implements JSONSerializable {
+export default class Category extends ObservableImpl<ObservableFields> implements JSONSerializable, Disposable {
   uuid: string;
   subCategories: SubCategory[] = [];
 
@@ -62,6 +63,7 @@ export default class Category extends ObservableImpl<ObservableFields> implement
       }
     }
 
+    target.dispose();
     this.subCategories.splice(targetIndex, 1);
     this.notify();
   }
@@ -71,6 +73,11 @@ export default class Category extends ObservableImpl<ObservableFields> implement
       name: this.name,
       subCategories: this.subCategories.map(subCategory => subCategory.toJSON()),
     });
+  }
+
+  dispose(): void {
+    this.unsubscribeAll();
+    this.subCategories.forEach(subCategory => subCategory.dispose());
   }
 
   get totalBudget(): number {

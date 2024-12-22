@@ -16,6 +16,10 @@ export default class ObservableImpl<T> implements Observable<T> {
     this.subscribers = this.subscribers.filter(subscriber => subscriber !== callback);
   }
 
+  unsubscribeAll(): void {
+    this.subscribers = [];
+  }
+
   protected notify(): void {
     this.subscribers.forEach(subscriber => subscriber(this as unknown as T));
   }

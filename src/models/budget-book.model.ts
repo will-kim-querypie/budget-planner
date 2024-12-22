@@ -2,10 +2,11 @@ import safetyAdd from "../utils/safety-add";
 import Category from "./category.model";
 import ObservableImpl from "./observable.model";
 import type { JSONSerializable } from "./serializable.model";
+import type { Disposable } from "./disposable.model";
 
 type ObservableFields = Pick<BudgetBook, 'takeHomePay' | 'categories'>;
 
-export default class BudgetBook extends ObservableImpl<ObservableFields> implements JSONSerializable {
+export default class BudgetBook extends ObservableImpl<ObservableFields> implements JSONSerializable, Disposable {
   private constructor(
     public takeHomePay: number,
     public categories: Category[],
@@ -57,6 +58,7 @@ export default class BudgetBook extends ObservableImpl<ObservableFields> impleme
       }
     }
 
+    target.dispose();
     this.categories.splice(targetIndex, 1);
     this.notify();
   }
@@ -66,6 +68,11 @@ export default class BudgetBook extends ObservableImpl<ObservableFields> impleme
       takeHomePay: this.takeHomePay,
       categories: this.categories.map(category => category.toJSON()),
     });
+  }
+
+  dispose(): void {
+    this.unsubscribeAll();
+    this.categories.forEach(category => category.dispose());
   }
 
   get totalBudget(): number {
