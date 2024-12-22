@@ -1,12 +1,16 @@
-import type { JSONSerializable } from "src/models/serializable.model.ts";
+import ObservableImpl from "./observable.model";
+import type { JSONSerializable } from "./serializable.model";
 
-export default class SubCategory implements JSONSerializable<SubCategory> {
+type ObservableFields = Pick<SubCategory, 'name' | 'budget'>;
+
+export default class SubCategory extends ObservableImpl<ObservableFields> implements JSONSerializable {
   uuid: string;
 
   private constructor(
     public name: string,
     public budget: number,
   ) {
+    super();
     this.uuid = crypto.randomUUID();
   }
 
@@ -22,10 +26,12 @@ export default class SubCategory implements JSONSerializable<SubCategory> {
 
   setName(name: string): void {
     this.name = name;
+    this.notify();
   }
 
   setBudget(amount: number): void {
     this.budget = amount;
+    this.notify();
   }
 
   toJSON(): string {

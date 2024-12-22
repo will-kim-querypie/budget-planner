@@ -1,4 +1,4 @@
-export interface JSONSerializable<T> {
+export interface JSONSerializable {
   // static fromJSON(json: string): T;
-  toJSON(value: T): string;
+  toJSON(): string;
 }

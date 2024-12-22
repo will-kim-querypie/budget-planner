@@ -1,5 +1,5 @@
 import {createContext, ReactNode, useContext} from 'react';
-import BudgetBook from 'src/models/budget-book.model.ts';
+import BudgetBook from '../models/budget-book.model';
 
 const BudgetBookContext = createContext<BudgetBook | null>(null);
 

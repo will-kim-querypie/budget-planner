@@ -1,11 +1,16 @@
-import type { JSONSerializable } from "src/models/serializable.model.ts";
-import SubCategory from "src/models/sub-category.model.ts";
+import safetyAdd from "../utils/safety-add";
+import ObservableImpl  from "./observable.model";
+import type { JSONSerializable } from "./serializable.model";
+import SubCategory from "./sub-category.model";
 
-export default class Category implements JSONSerializable<Category> {
+type ObservableFields = Pick<Category, 'name' | 'subCategories'>;
+
+export default class Category extends ObservableImpl<ObservableFields> implements JSONSerializable {
   uuid: string;
   subCategories: SubCategory[] = [];
 
   private constructor(public name: string) {
+    super();
     this.uuid = crypto.randomUUID();
   }
 
@@ -29,10 +34,12 @@ export default class Category implements JSONSerializable<Category> {
 
   setName(name: string): void {
     this.name = name;
+    this.notify();
   }
 
   addSubCategory(): void {
     this.subCategories.push(SubCategory.create());
+    this.notify();
   }
 
   removeSubCategory(uuid: string): void {
@@ -42,12 +49,21 @@ export default class Category implements JSONSerializable<Category> {
     }
 
     const targetIndex = this.subCategories.findIndex(subCategory => subCategory.uuid === uuid);
-    if (targetIndex !== -1) {
+    if (targetIndex === -1) {
       alert('삭제할 하위 카테고리를 찾을 수 없습니다.');
       return;
     }
 
+    const target = this.subCategories[targetIndex];
+    if(!target.isEmpty) {
+      const isConfirmed = confirm('하위 카테고리에 입력된 데이터가 모두 삭제됩니다. 정말 삭제하시겠습니까?');
+      if (!isConfirmed) {
+        return;
+      }
+    }
+
     this.subCategories.splice(targetIndex, 1);
+    this.notify();
   }
 
   toJSON(): string {
@@ -58,7 +74,7 @@ export default class Category implements JSONSerializable<Category> {
   }
 
   get totalBudget(): number {
-    return this.subCategories.reduce((acc, subCategory) => acc + subCategory.budget, 0);
+    return this.subCategories.reduce((acc, subCategory) => safetyAdd(acc, subCategory.budget), 0);
   }
 
   get isEmpty(): boolean {

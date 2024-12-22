@@ -1,11 +1,17 @@
-import Category from "src/models/category.model.ts";
-import type { JSONSerializable } from "src/models/serializable.model.ts";
+import safetyAdd from "../utils/safety-add";
+import Category from "./category.model";
+import ObservableImpl from "./observable.model";
+import type { JSONSerializable } from "./serializable.model";
 
-export default class BudgetBook implements JSONSerializable<BudgetBook> {
+type ObservableFields = Pick<BudgetBook, 'takeHomePay' | 'categories'>;
+
+export default class BudgetBook extends ObservableImpl<ObservableFields> implements JSONSerializable {
   private constructor(
     public takeHomePay: number,
     public categories: Category[],
-  ) {}
+  ) {
+    super();
+  }
 
   static create(): BudgetBook {
     return new BudgetBook(0, [Category.create()]);
@@ -21,23 +27,38 @@ export default class BudgetBook implements JSONSerializable<BudgetBook> {
     return budgetBook;
   }
 
+  setTakeHomePay(amount: number): void {
+    this.takeHomePay = amount;
+    this.notify();
+  }
+
   addCategory(): void {
     this.categories.push(Category.create());
+    this.notify();
   }
 
   removeCategory(uuid: string): void {
     if (this.categories.length === 1) {
-      alert('하나 이상의 카테고리가 필요합니다.');``
+      alert('하나 이상의 카테고리가 필요합니다.');
       return;
     }
 
     const targetIndex = this.categories.findIndex(category => category.uuid === uuid);
-    if (targetIndex !== -1) {
+    if (targetIndex === -1) {
       alert('삭제할 카테고리를 찾을 수 없습니다.');
       return;
     }
 
+    const target = this.categories[targetIndex];
+    if(!target.isEmpty) {
+      const isConfirmed = confirm('카테고리에 입력된 데이터가 모두 삭제됩니다. 정말 삭제하시겠습니까?');
+      if (!isConfirmed) {
+        return;
+      }
+    }
+
     this.categories.splice(targetIndex, 1);
+    this.notify();
   }
 
   toJSON(): string {
@@ -48,6 +69,6 @@ export default class BudgetBook implements JSONSerializable<BudgetBook> {
   }
 
   get totalBudget(): number {
-    return this.categories.reduce((acc, category) => acc + category.totalBudget, 0);
+    return this.categories.reduce((acc, category) => safetyAdd(acc, category.totalBudget), 0);
   }
 }
