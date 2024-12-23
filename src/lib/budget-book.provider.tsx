@@ -1,0 +1,27 @@
+import {ReactNode, useEffect, useState} from 'react';
+import { BudgetBookContext } from './budget-book.context';
+import BudgetBook from '../models/budget-book.model';
+
+type Props = {
+  children: ReactNode;
+}
+
+export const BudgetBookProvider = ({ children }: Props) => {
+  const [budgetBook] = useState(() => {
+    const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
+
+    return storedValue ? BudgetBook.fromJSON(storedValue) : BudgetBook.create();
+  });
+
+  useEffect(() => {
+    // budgetBook.subscribe(...)
+  }, []);
+
+  return (
+    <BudgetBookContext.Provider value={budgetBook}>
+      {children}
+    </BudgetBookContext.Provider>
+  );
+}
+
+const LOCAL_STORAGE_KEY = 'budget-book';

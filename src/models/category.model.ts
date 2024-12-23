@@ -1,17 +1,17 @@
 import safetyAdd from "../utils/safety-add";
-import ObservableImpl  from "./observable.model";
+import type { Observable, Subscriber } from './observable.model';
 import type { Disposable } from "./disposable.model";
 import type { JSONSerializable } from "./serializable.model";
 import SubCategory from "./sub-category.model";
 
 type ObservableFields = Pick<Category, 'name' | 'subCategories'>;
 
-export default class Category extends ObservableImpl<ObservableFields> implements JSONSerializable, Disposable {
+export default class Category implements JSONSerializable, Disposable, Observable<ObservableFields> {
   uuid: string;
   subCategories: SubCategory[] = [];
+  private subscribers: Subscriber<ObservableFields>[] = [];
 
   private constructor(public name: string) {
-    super();
     this.uuid = crypto.randomUUID();
   }
 
@@ -75,8 +75,23 @@ export default class Category extends ObservableImpl<ObservableFields> implement
     });
   }
 
+  subscribe(callback: Subscriber<ObservableFields>): void {
+    this.subscribers.push(callback);
+  }
+
+  unsubscribe(callback: Subscriber<ObservableFields>): void {
+    this.subscribers = this.subscribers.filter(subscriber => subscriber !== callback);
+  }
+
+  private notify(): void {
+    this.subscribers.forEach(subscriber => subscriber({
+      name: this.name,
+      subCategories: this.subCategories,
+    }));
+  }
+
   dispose(): void {
-    this.unsubscribeAll();
+    this.subscribers = [];
     this.subCategories.forEach(subCategory => subCategory.dispose());
   }
 

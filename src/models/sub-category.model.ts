@@ -1,17 +1,17 @@
-import ObservableImpl from "./observable.model";
+import type { Observable, Subscriber } from './observable.model';
 import type { JSONSerializable } from "./serializable.model";
 import type { Disposable } from "./disposable.model";
 
 type ObservableFields = Pick<SubCategory, 'name' | 'budget'>;
 
-export default class SubCategory extends ObservableImpl<ObservableFields> implements JSONSerializable, Disposable {
+export default class SubCategory implements JSONSerializable, Disposable, Observable<ObservableFields> {
   uuid: string;
+  private subscribers: Subscriber<ObservableFields>[] = [];
 
   private constructor(
     public name: string,
     public budget: number,
   ) {
-    super();
     this.uuid = crypto.randomUUID();
   }
 
@@ -42,8 +42,23 @@ export default class SubCategory extends ObservableImpl<ObservableFields> implem
     });
   }
 
+  subscribe(callback: Subscriber<ObservableFields>): void {
+    this.subscribers.push(callback);
+  }
+
+  unsubscribe(callback: Subscriber<ObservableFields>): void {
+    this.subscribers = this.subscribers.filter(subscriber => subscriber !== callback);
+  }
+
+  private notify(): void {
+    this.subscribers.forEach(subscriber => subscriber({
+      name: this.name,
+      budget: this.budget,
+    }));
+  }
+
   dispose(): void {
-    this.unsubscribeAll();
+    this.subscribers = [];
   }
 
   get isEmpty(): boolean {

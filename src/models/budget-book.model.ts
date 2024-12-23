@@ -1,18 +1,18 @@
 import safetyAdd from "../utils/safety-add";
 import Category from "./category.model";
-import ObservableImpl from "./observable.model";
+import type { Observable, Subscriber } from './observable.model';
 import type { JSONSerializable } from "./serializable.model";
 import type { Disposable } from "./disposable.model";
 
 type ObservableFields = Pick<BudgetBook, 'takeHomePay' | 'categories'>;
 
-export default class BudgetBook extends ObservableImpl<ObservableFields> implements JSONSerializable, Disposable {
+export default class BudgetBook implements JSONSerializable, Disposable, Observable<ObservableFields> {
+  private subscribers: Subscriber<ObservableFields>[] = [];
+
   private constructor(
     public takeHomePay: number,
     public categories: Category[],
-  ) {
-    super();
-  }
+  ) {}
 
   static create(): BudgetBook {
     return new BudgetBook(0, [Category.create()]);
@@ -70,8 +70,23 @@ export default class BudgetBook extends ObservableImpl<ObservableFields> impleme
     });
   }
 
+  subscribe(callback: Subscriber<ObservableFields>): void {
+    this.subscribers.push(callback);
+  }
+
+  unsubscribe(callback: Subscriber<ObservableFields>): void {
+    this.subscribers = this.subscribers.filter(subscriber => subscriber !== callback);
+  }
+
+  private notify(): void {
+    this.subscribers.forEach(subscriber => subscriber({
+      takeHomePay: this.takeHomePay,
+      categories: this.categories,
+    }));
+  }
+
   dispose(): void {
-    this.unsubscribeAll();
+    this.subscribers = [];
     this.categories.forEach(category => category.dispose());
   }
 
