@@ -1,12 +1,11 @@
-import type { Observable, Subscriber } from './observable.model';
 import type { JSONSerializable } from "./serializable.model";
 import type { Disposable } from "./disposable.model";
+import EventBus from "../utils/event-bus";
+import EventName from "../config/event-name";
 
-type ObservableFields = Pick<SubCategory, 'name' | 'budget'>;
-
-export default class SubCategory implements JSONSerializable, Disposable, Observable<ObservableFields> {
+export default class SubCategory implements JSONSerializable, Disposable {
   uuid: string;
-  private subscribers: Subscriber<ObservableFields>[] = [];
+  private events = EventBus.getInstance();
 
   private constructor(
     public name: string,
@@ -25,16 +24,6 @@ export default class SubCategory implements JSONSerializable, Disposable, Observ
     return new SubCategory(name, budget);
   }
 
-  setName(name: string): void {
-    this.name = name;
-    this.notify();
-  }
-
-  setBudget(amount: number): void {
-    this.budget = amount;
-    this.notify();
-  }
-
   toJSON(): string {
     return JSON.stringify({
       name: this.name,
@@ -42,23 +31,27 @@ export default class SubCategory implements JSONSerializable, Disposable, Observ
     });
   }
 
-  subscribe(callback: Subscriber<ObservableFields>): void {
-    this.subscribers.push(callback);
+  setName(name: string): void {
+    this.name = name;
+    this.events.emit(EventName.subCategoryNameChangedOf(this.uuid));
   }
 
-  unsubscribe(callback: Subscriber<ObservableFields>): void {
-    this.subscribers = this.subscribers.filter(subscriber => subscriber !== callback);
+  setBudget(amount: number): void {
+    this.budget = amount;
+    this.events.emit(EventName.subCategoryBudgetChangedOf(this.uuid));
   }
 
-  private notify(): void {
-    this.subscribers.forEach(subscriber => subscriber({
-      name: this.name,
-      budget: this.budget,
-    }));
+  subscribeNameChange(callback: () => void): () => void {
+    return this.events.subscribe(EventName.subCategoryNameChangedOf(this.uuid), callback);
+  }
+
+  subscribeBudgetChange(callback: () => void): () => void {
+    return this.events.subscribe(EventName.subCategoryBudgetChangedOf(this.uuid), callback);
   }
 
   dispose(): void {
-    this.subscribers = [];
+    this.events.unsubscribeEvent(EventName.subCategoryNameChangedOf(this.uuid));
+    this.events.unsubscribeEvent(EventName.subCategoryBudgetChangedOf(this.uuid));
   }
 
   get isEmpty(): boolean {

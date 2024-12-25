@@ -1,13 +1,12 @@
 import safetyAdd from "../utils/safety-add";
 import Category from "./category.model";
-import type { Observable, Subscriber } from './observable.model';
 import type { JSONSerializable } from "./serializable.model";
 import type { Disposable } from "./disposable.model";
+import EventBus from "../utils/event-bus";
+import EventName from "../config/event-name";
 
-type ObservableFields = Pick<BudgetBook, 'takeHomePay' | 'categories'>;
-
-export default class BudgetBook implements JSONSerializable, Disposable, Observable<ObservableFields> {
-  private subscribers: Subscriber<ObservableFields>[] = [];
+export default class BudgetBook implements JSONSerializable, Disposable {
+  private events = EventBus.getInstance();
 
   private constructor(
     public takeHomePay: number,
@@ -28,14 +27,21 @@ export default class BudgetBook implements JSONSerializable, Disposable, Observa
     return budgetBook;
   }
 
+  toJSON(): string {
+    return JSON.stringify({
+      takeHomePay: this.takeHomePay,
+      categories: this.categories.map(category => category.toJSON()),
+    });
+  }
+
   setTakeHomePay(amount: number): void {
     this.takeHomePay = amount;
-    this.notify();
+    this.events.emit(EventName.rootTakeHomePayChanged);
   }
 
   addCategory(): void {
     this.categories.push(Category.create());
-    this.notify();
+    this.events.emit(EventName.rootCategoriesChanged);
   }
 
   removeCategory(uuid: string): void {
@@ -60,34 +66,25 @@ export default class BudgetBook implements JSONSerializable, Disposable, Observa
 
     target.dispose();
     this.categories.splice(targetIndex, 1);
-    this.notify();
+    this.events.emit(EventName.rootCategoriesChanged);
   }
 
-  toJSON(): string {
-    return JSON.stringify({
-      takeHomePay: this.takeHomePay,
-      categories: this.categories.map(category => category.toJSON()),
-    });
+  subscribeTakeHomePayChange(callback: () => void) {
+    return this.events.subscribe(EventName.rootTakeHomePayChanged, callback);
   }
 
-  subscribe(callback: Subscriber<ObservableFields>): void {
-    this.subscribers.push(callback);
+  subscribeCategoriesChange(callback: () => void) {
+    return this.events.subscribe(EventName.rootCategoriesChanged, callback);
   }
 
-  unsubscribe(callback: Subscriber<ObservableFields>): void {
-    this.subscribers = this.subscribers.filter(subscriber => subscriber !== callback);
-  }
-
-  private notify(): void {
-    this.subscribers.forEach(subscriber => subscriber({
-      takeHomePay: this.takeHomePay,
-      categories: this.categories,
-    }));
+  subscribeAllChange(callback: () => void) {
+    return this.events.subscribeAllEvents(callback);
   }
 
   dispose(): void {
-    this.subscribers = [];
     this.categories.forEach(category => category.dispose());
+
+    this.events.dispose();
   }
 
   get totalBudget(): number {

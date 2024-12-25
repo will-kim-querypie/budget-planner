@@ -1,17 +1,18 @@
 import safetyAdd from "../utils/safety-add";
-import type { Observable, Subscriber } from './observable.model';
 import type { Disposable } from "./disposable.model";
 import type { JSONSerializable } from "./serializable.model";
 import SubCategory from "./sub-category.model";
+import EventBus from "../utils/event-bus";
+import EventName from "../config/event-name";
 
-type ObservableFields = Pick<Category, 'name' | 'subCategories'>;
-
-export default class Category implements JSONSerializable, Disposable, Observable<ObservableFields> {
+export default class Category implements JSONSerializable, Disposable {
   uuid: string;
   subCategories: SubCategory[] = [];
-  private subscribers: Subscriber<ObservableFields>[] = [];
+  private events = EventBus.getInstance();
 
-  private constructor(public name: string) {
+  private constructor(
+    public name: string,
+  ) {
     this.uuid = crypto.randomUUID();
   }
 
@@ -33,14 +34,21 @@ export default class Category implements JSONSerializable, Disposable, Observabl
     return category;
   }
 
+  toJSON(): string {
+    return JSON.stringify({
+      name: this.name,
+      subCategories: this.subCategories.map(subCategory => subCategory.toJSON()),
+    });
+  }
+
   setName(name: string): void {
     this.name = name;
-    this.notify();
+    this.events.emit(EventName.categoryNameChangedOf(this.uuid));
   }
 
   addSubCategory(): void {
     this.subCategories.push(SubCategory.create());
-    this.notify();
+    this.events.emit(EventName.categorySubCategoriesChangedOf(this.uuid));
   }
 
   removeSubCategory(uuid: string): void {
@@ -65,34 +73,22 @@ export default class Category implements JSONSerializable, Disposable, Observabl
 
     target.dispose();
     this.subCategories.splice(targetIndex, 1);
-    this.notify();
+    this.events.emit(EventName.categorySubCategoriesChangedOf(this.uuid));
   }
 
-  toJSON(): string {
-    return JSON.stringify({
-      name: this.name,
-      subCategories: this.subCategories.map(subCategory => subCategory.toJSON()),
-    });
+  subscribeNameChange(callback: () => void) {
+    return this.events.subscribe(EventName.categoryNameChangedOf(this.uuid), callback);
   }
 
-  subscribe(callback: Subscriber<ObservableFields>): void {
-    this.subscribers.push(callback);
-  }
-
-  unsubscribe(callback: Subscriber<ObservableFields>): void {
-    this.subscribers = this.subscribers.filter(subscriber => subscriber !== callback);
-  }
-
-  private notify(): void {
-    this.subscribers.forEach(subscriber => subscriber({
-      name: this.name,
-      subCategories: this.subCategories,
-    }));
+  subscribeSubCategoriesChange(callback: () => void) {
+    return this.events.subscribe(EventName.categorySubCategoriesChangedOf(this.uuid), callback);
   }
 
   dispose(): void {
-    this.subscribers = [];
     this.subCategories.forEach(subCategory => subCategory.dispose());
+
+    this.events.unsubscribeEvent(EventName.categoryNameChangedOf(this.uuid));
+    this.events.unsubscribeEvent(EventName.categorySubCategoriesChangedOf(this.uuid));
   }
 
   get totalBudget(): number {

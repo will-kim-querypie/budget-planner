@@ -14,7 +14,11 @@ export const BudgetBookProvider = ({ children }: Props) => {
   });
 
   useEffect(() => {
-    // budgetBook.subscribe(...)
+    const unsubscribe = budgetBook.subscribeAllChange(() => {
+      localStorage.setItem(LOCAL_STORAGE_KEY, budgetBook.toJSON());
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return (
