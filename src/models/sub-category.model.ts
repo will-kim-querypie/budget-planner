@@ -4,8 +4,8 @@ import EventBus from "../utils/event-bus";
 import EventName from "../config/event-name";
 
 export default class SubCategory implements JSONSerializable, Disposable {
-  uuid: string;
-  private events = EventBus.getInstance();
+  readonly uuid: string;
+  private readonly events = EventBus.getInstance();
 
   private constructor(
     public name: string,

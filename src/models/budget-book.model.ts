@@ -5,13 +5,19 @@ import type { Disposable } from "./disposable.model";
 import EventBus from "../utils/event-bus";
 import EventName from "../config/event-name";
 
+/**
+ * NOTE: 가계부는 카테고리를 최소 한 개 가지고 있어야 합니다.
+ */
 export default class BudgetBook implements JSONSerializable, Disposable {
-  private events = EventBus.getInstance();
+  private readonly events = EventBus.getInstance();
+  readonly #categories = new Map<string, Category>();
 
   private constructor(
     public takeHomePay: number,
-    public categories: Category[],
-  ) {}
+    categories: Category[],
+  ) {
+    this.#categories = new Map(categories.map(category => [category.uuid, category]));
+  }
 
   static create(): BudgetBook {
     return new BudgetBook(0, [Category.create()]);
@@ -20,11 +26,7 @@ export default class BudgetBook implements JSONSerializable, Disposable {
   static fromJSON(json: string): BudgetBook {
     const { takeHomePay, categories } = JSON.parse(json);
 
-    const budgetBook = new BudgetBook(takeHomePay, []);
-
-    budgetBook.categories = categories.map((categoryJSON: string) => Category.fromJSON(categoryJSON));
-
-    return budgetBook;
+    return new BudgetBook(takeHomePay, categories.map((json: string) => Category.fromJSON(json)));
   }
 
   toJSON(): string {
@@ -36,27 +38,29 @@ export default class BudgetBook implements JSONSerializable, Disposable {
 
   setTakeHomePay(amount: number): void {
     this.takeHomePay = amount;
+
     this.events.emit(EventName.rootTakeHomePayChanged);
   }
 
   addCategory(): void {
-    this.categories.push(Category.create());
+    const category = Category.create();
+    this.#categories.set(category.uuid, category);
+
     this.events.emit(EventName.rootCategoriesChanged);
   }
 
   removeCategory(uuid: string): void {
-    if (this.categories.length === 1) {
+    if (this.#categories.size === 1) {
       alert('하나 이상의 카테고리가 필요합니다.');
       return;
     }
 
-    const targetIndex = this.categories.findIndex(category => category.uuid === uuid);
-    if (targetIndex === -1) {
+    if (!this.#categories.has(uuid)) {
       alert('삭제할 카테고리를 찾을 수 없습니다.');
       return;
     }
 
-    const target = this.categories[targetIndex];
+    const target = this.#categories.get(uuid)!;
     if(!target.isEmpty) {
       const isConfirmed = confirm('카테고리에 입력된 데이터가 모두 삭제됩니다. 정말 삭제하시겠습니까?');
       if (!isConfirmed) {
@@ -65,7 +69,8 @@ export default class BudgetBook implements JSONSerializable, Disposable {
     }
 
     target.dispose();
-    this.categories.splice(targetIndex, 1);
+    this.#categories.delete(uuid);
+
     this.events.emit(EventName.rootCategoriesChanged);
   }
 
@@ -82,9 +87,17 @@ export default class BudgetBook implements JSONSerializable, Disposable {
   }
 
   dispose(): void {
-    this.categories.forEach(category => category.dispose());
+    this.#categories.forEach(category => category.dispose());
 
     this.events.dispose();
+  }
+
+  getCategory(uuid: string): Category | undefined {
+    return this.#categories.get(uuid);
+  }
+
+  get categories(): Category[] {
+    return [...this.#categories.values()];
   }
 
   get totalBudget(): number {
