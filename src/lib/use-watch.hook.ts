@@ -7,8 +7,8 @@ export function useWatchCategory(categoryUUID: string) {
   return useWatchBudgetBook(budgetBook => budgetBook.getCategory(categoryUUID))
 }
 
-export function useWatchSubCategory(categoryUUID: string, subCategoryUUID: string) {
-  return useWatchBudgetBook(budgetBook => budgetBook.getCategory(categoryUUID)?.getSubCategory(subCategoryUUID))
+export function useWatchSubcategory(categoryUUID: string, SubcategoryUUID: string) {
+  return useWatchBudgetBook(budgetBook => budgetBook.getCategory(categoryUUID)?.getSubcategory(SubcategoryUUID))
 }
 
 function useWatchBudgetBook<Target extends Comparable<unknown>>(

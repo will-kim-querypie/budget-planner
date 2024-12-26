@@ -3,7 +3,7 @@ import type { Comparable } from "./comparable.model";
 import EventEmitter from "../utils/event-emitter";
 import { EventName } from "../config/event-name";
 
-export default class SubCategory implements JSONSerializable, Comparable<SubCategory> {
+export default class Subcategory implements JSONSerializable, Comparable<Subcategory> {
   readonly uuid: string;
   private readonly eventEmitter = EventEmitter.getInstance();
 
@@ -14,14 +14,14 @@ export default class SubCategory implements JSONSerializable, Comparable<SubCate
     this.uuid = crypto.randomUUID();
   }
 
-  static create(): SubCategory {
-    return new SubCategory('', 0);
+  static create(): Subcategory {
+    return new Subcategory('', 0);
   }
 
-  static fromJSON(json: string): SubCategory {
+  static fromJSON(json: string): Subcategory {
     const { name, budget } = JSON.parse(json);
 
-    return new SubCategory(name, budget);
+    return new Subcategory(name, budget);
   }
 
   toJSON(): string {
@@ -41,7 +41,7 @@ export default class SubCategory implements JSONSerializable, Comparable<SubCate
     this.eventEmitter.emit(EventName.Change);
   }
 
-  diff(to: SubCategory): boolean {
+  diff(to: Subcategory): boolean {
     return this.name !== to.name || this.budget !== to.budget;
   }
 

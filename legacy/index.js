@@ -316,25 +316,25 @@ class Category {
   }
 
   addSubcategory(data = null) {
-    const subcategory = new Subcategory(this, data);
-    this.contentDiv.appendChild(subcategory.render());
-    this.subcategories.push(subcategory);
+    const Subcategory = new Subcategory(this, data);
+    this.contentDiv.appendChild(Subcategory.render());
+    this.subcategories.push(Subcategory);
     this.tracker.saveToStorage();
   }
 
-  removeSubcategory(subcategory) {
+  removeSubcategory(Subcategory) {
     // 서브카테고리가 하나만 남았을 경우 삭제 불가
     if (this.subcategories.length <= 1) {
       alert("최소 하나의 서브카테고리는 유지해야 합니다.");
       return;
     }
 
-    if (subcategory.hasContent && !confirm("이 서브 카테고리를 삭제하시겠습니까?")) {
+    if (Subcategory.hasContent && !confirm("이 서브 카테고리를 삭제하시겠습니까?")) {
       return;
     }
 
-    this.subcategories = this.subcategories.filter(s => s !== subcategory);
-    subcategory.element.remove();
+    this.subcategories = this.subcategories.filter(s => s !== Subcategory);
+    Subcategory.element.remove();
     this.tracker.saveToStorage();
   }
 
@@ -355,7 +355,7 @@ class Category {
   }
 
   get hasContent() {
-    return !!this.input.value || (!!this.subcategories.length && this.subcategories.some(subcategory => subcategory.hasContent))
+    return !!this.input.value || (!!this.subcategories.length && this.subcategories.some(Subcategory => Subcategory.hasContent))
   }
 }
 
@@ -368,7 +368,7 @@ class Subcategory {
 
   initDOM() {
     this.element = document.createElement('div');
-    this.element.className = 'subcategory';
+    this.element.className = 'Subcategory';
 
     this.label = document.createElement('label');
     this.label.textContent = '서브카테고리:';

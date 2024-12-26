@@ -140,7 +140,7 @@ button:hover {
   padding: 0 15px;
 }
 
-.subcategory {
+.Subcategory {
   position: relative;
   border: 1px solid #ddd;
   padding: 15px;
@@ -148,7 +148,7 @@ button:hover {
   background-color: #eef5ff;
 }
 
-.subcategory:only-child .remove-btn {
+.Subcategory:only-child .remove-btn {
   display: none;
 }
 

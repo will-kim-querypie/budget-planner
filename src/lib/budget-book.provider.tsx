@@ -6,7 +6,7 @@ type Props = {
   children: ReactNode;
 }
 
-export const BudgetBookProvider = ({ children }: Props) => {
+export default function BudgetBookProvider({ children }: Props) {
   const [budgetBook] = useState(() => {
     const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
 

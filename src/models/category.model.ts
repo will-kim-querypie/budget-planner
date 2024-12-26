@@ -1,7 +1,7 @@
 import safetyAdd from "../utils/safety-add";
 import type { JSONSerializable } from "./json-serializable.model";
 import type { Comparable } from "./comparable.model";
-import SubCategory from "./sub-category.model";
+import Subcategory from "./subcategory.model";
 import EventEmitter from "../utils/event-emitter";
 import { EventName } from "../config/event-name";
 
@@ -10,31 +10,31 @@ import { EventName } from "../config/event-name";
  */
 export default class Category implements JSONSerializable, Comparable<Category> {
   readonly uuid: string;
-  readonly #subCategories = new Map<string, SubCategory>();
+  readonly #subcategories = new Map<string, Subcategory>();
   private readonly eventEmitter = EventEmitter.getInstance();
 
   private constructor(
     public name: string,
-    subCategories: SubCategory[],
+    subcategories: Subcategory[],
   ) {
     this.uuid = crypto.randomUUID();
-    this.#subCategories = new Map(subCategories.map(subCategory => [subCategory.uuid, subCategory]));
+    this.#subcategories = new Map(subcategories.map(Subcategory => [Subcategory.uuid, Subcategory]));
   }
 
   static create(): Category {
-    return new Category('', [SubCategory.create()]);
+    return new Category('', [Subcategory.create()]);
   }
 
   static fromJSON(json: string): Category {
-    const { name, subCategories } = JSON.parse(json);
+    const { name, subcategories } = JSON.parse(json);
 
-    return new Category(name, subCategories.map((json: string) => SubCategory.fromJSON(json)));
+    return new Category(name, subcategories.map((json: string) => Subcategory.fromJSON(json)));
   }
 
   toJSON(): string {
     return JSON.stringify({
       name: this.name,
-      subCategories: this.subCategories.map(subCategory => subCategory.toJSON()),
+      subcategories: this.subcategories.map(Subcategory => Subcategory.toJSON()),
     });
   }
 
@@ -44,25 +44,25 @@ export default class Category implements JSONSerializable, Comparable<Category> 
     this.eventEmitter.emit(EventName.Change);
   }
 
-  addSubCategory(): void {
-    const subCategory = SubCategory.create();
-    this.#subCategories.set(subCategory.uuid, subCategory);
+  addSubcategory(): void {
+    const subcategory = Subcategory.create();
+    this.#subcategories.set(subcategory.uuid, subcategory);
 
     this.eventEmitter.emit(EventName.ChildrenChange);
   }
 
-  removeSubCategory(uuid: string): void {
-    if (this.#subCategories.size === 1) {
+  removeSubcategory(uuid: string): void {
+    if (this.#subcategories.size === 1) {
       alert('하나 이상의 하위 카테고리가 필요합니다.');
       return;
     }
 
-    if (!this.#subCategories.has(uuid)) {
+    if (!this.#subcategories.has(uuid)) {
       alert('삭제할 하위 카테고리를 찾을 수 없습니다.');
       return;
     }
 
-    const target = this.#subCategories.get(uuid)!;
+    const target = this.#subcategories.get(uuid)!;
     if(!target.isEmpty) {
       const isConfirmed = confirm('하위 카테고리에 입력된 데이터가 모두 삭제됩니다. 정말 삭제하시겠습니까?');
       if (!isConfirmed) {
@@ -70,7 +70,7 @@ export default class Category implements JSONSerializable, Comparable<Category> 
       }
     }
 
-    this.#subCategories.delete(uuid);
+    this.#subcategories.delete(uuid);
 
     this.eventEmitter.emit(EventName.ChildrenChange);
   }
@@ -78,24 +78,24 @@ export default class Category implements JSONSerializable, Comparable<Category> 
   diff(to: Category): boolean {
     return (
       this.name !== to.name ||
-      this.subCategories.length !== to.subCategories.length ||
-      this.subCategories.some((subCategory, index) => subCategory.diff(to.subCategories[index]))
+      this.subcategories.length !== to.subcategories.length ||
+      this.subcategories.some((Subcategory, index) => Subcategory.diff(to.subcategories[index]))
     )
   }
 
-  getSubCategory(uuid: string): SubCategory | undefined {
-    return this.#subCategories.get(uuid);
+  getSubcategory(uuid: string): Subcategory | undefined {
+    return this.#subcategories.get(uuid);
   }
 
-  get subCategories(): SubCategory[] {
-    return [...this.#subCategories.values()];
+  get subcategories(): Subcategory[] {
+    return [...this.#subcategories.values()];
   }
 
   get totalBudget(): number {
-    return this.subCategories.reduce((acc, subCategory) => safetyAdd(acc, subCategory.budget), 0);
+    return this.subcategories.reduce((acc, Subcategory) => safetyAdd(acc, Subcategory.budget), 0);
   }
 
   get isEmpty(): boolean {
-    return !this.name && (!this.#subCategories.size || this.subCategories.every(subCategory => subCategory.isEmpty));
+    return !this.name && (!this.#subcategories.size || this.subcategories.every(Subcategory => Subcategory.isEmpty));
   }
 }
