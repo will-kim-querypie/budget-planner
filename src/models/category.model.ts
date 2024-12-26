@@ -1,17 +1,17 @@
 import safetyAdd from "../utils/safety-add";
-import type { Disposable } from "./disposable.model";
-import type { JSONSerializable } from "./serializable.model";
+import type { JSONSerializable } from "./json-serializable.model";
+import type { Comparable } from "./comparable.model";
 import SubCategory from "./sub-category.model";
-import EventBus from "../utils/event-bus";
-import EventName from "../config/event-name";
+import EventEmitter from "../utils/event-emitter";
+import { EventName } from "../config/event-name";
 
 /**
  * NOTE: 카테고리는 하위 카테고리를 최소 한 개 가지고 있어야 합니다.
  */
-export default class Category implements JSONSerializable, Disposable {
+export default class Category implements JSONSerializable, Comparable<Category> {
   readonly uuid: string;
   readonly #subCategories = new Map<string, SubCategory>();
-  private readonly events = EventBus.getInstance();
+  private readonly eventEmitter = EventEmitter.getInstance();
 
   private constructor(
     public name: string,
@@ -41,14 +41,14 @@ export default class Category implements JSONSerializable, Disposable {
   setName(name: string): void {
     this.name = name;
 
-    this.events.emit(EventName.categoryNameChangedOf(this.uuid));
+    this.eventEmitter.emit(EventName.Change);
   }
 
   addSubCategory(): void {
     const subCategory = SubCategory.create();
     this.#subCategories.set(subCategory.uuid, subCategory);
 
-    this.events.emit(EventName.categorySubCategoriesChangedOf(this.uuid));
+    this.eventEmitter.emit(EventName.ChildrenChange);
   }
 
   removeSubCategory(uuid: string): void {
@@ -70,25 +70,17 @@ export default class Category implements JSONSerializable, Disposable {
       }
     }
 
-    target.dispose();
     this.#subCategories.delete(uuid);
 
-    this.events.emit(EventName.categorySubCategoriesChangedOf(this.uuid));
+    this.eventEmitter.emit(EventName.ChildrenChange);
   }
 
-  subscribeNameChange(callback: () => void) {
-    return this.events.subscribe(EventName.categoryNameChangedOf(this.uuid), callback);
-  }
-
-  subscribeSubCategoriesChange(callback: () => void) {
-    return this.events.subscribe(EventName.categorySubCategoriesChangedOf(this.uuid), callback);
-  }
-
-  dispose(): void {
-    this.#subCategories.forEach(subCategory => subCategory.dispose());
-
-    this.events.unsubscribeEvent(EventName.categoryNameChangedOf(this.uuid));
-    this.events.unsubscribeEvent(EventName.categorySubCategoriesChangedOf(this.uuid));
+  diff(to: Category): boolean {
+    return (
+      this.name !== to.name ||
+      this.subCategories.length !== to.subCategories.length ||
+      this.subCategories.some((subCategory, index) => subCategory.diff(to.subCategories[index]))
+    )
   }
 
   getSubCategory(uuid: string): SubCategory | undefined {

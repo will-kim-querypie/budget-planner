@@ -1,20 +1,21 @@
-export default class EventBus {
-  private static instance: EventBus;
+export default class EventEmitter {
+  private static instance: EventEmitter;
   private listeners: Map<string, Set<() => void>> = new Map();
   private allEventsListeners: Set<() => void> = new Set();
 
   private constructor() {}
 
-  static getInstance(): EventBus {
-    if (!EventBus.instance) {
-      EventBus.instance = new EventBus();
+  static getInstance(): EventEmitter {
+    if (!EventEmitter.instance) {
+      EventEmitter.instance = new EventEmitter();
     }
-    return EventBus.instance;
+    return EventEmitter.instance;
   }
 
   emit(event: string) {
     const callbacks = this.listeners.get(event);
     callbacks?.forEach(callback => callback());
+
     this.allEventsListeners.forEach(callback => callback());
   }
 
@@ -35,10 +36,6 @@ export default class EventBus {
     return () => {
       this.allEventsListeners.delete(callback);
     };
-  }
-
-  unsubscribeEvent(event: string) {
-    this.listeners.delete(event);
   }
 
   dispose() {

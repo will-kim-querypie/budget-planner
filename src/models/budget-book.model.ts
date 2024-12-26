@@ -1,16 +1,17 @@
 import safetyAdd from "../utils/safety-add";
 import Category from "./category.model";
-import type { JSONSerializable } from "./serializable.model";
+import type { JSONSerializable } from "./json-serializable.model";
 import type { Disposable } from "./disposable.model";
-import EventBus from "../utils/event-bus";
-import EventName from "../config/event-name";
+import EventEmitter from "../utils/event-emitter";
+import { EventName } from "../config/event-name";
 
 /**
  * NOTE: 가계부는 카테고리를 최소 한 개 가지고 있어야 합니다.
  */
 export default class BudgetBook implements JSONSerializable, Disposable {
-  private readonly events = EventBus.getInstance();
   readonly #categories = new Map<string, Category>();
+  private readonly eventEmitter = EventEmitter.getInstance();
+  private disposers: (() => void)[] = [];
 
   private constructor(
     public takeHomePay: number,
@@ -39,14 +40,14 @@ export default class BudgetBook implements JSONSerializable, Disposable {
   setTakeHomePay(amount: number): void {
     this.takeHomePay = amount;
 
-    this.events.emit(EventName.rootTakeHomePayChanged);
+    this.eventEmitter.emit(EventName.Change);
   }
 
   addCategory(): void {
     const category = Category.create();
     this.#categories.set(category.uuid, category);
 
-    this.events.emit(EventName.rootCategoriesChanged);
+    this.eventEmitter.emit(EventName.ChildrenChange);
   }
 
   removeCategory(uuid: string): void {
@@ -68,28 +69,24 @@ export default class BudgetBook implements JSONSerializable, Disposable {
       }
     }
 
-    target.dispose();
     this.#categories.delete(uuid);
 
-    this.events.emit(EventName.rootCategoriesChanged);
+    this.eventEmitter.emit(EventName.ChildrenChange);
   }
 
-  subscribeTakeHomePayChange(callback: () => void) {
-    return this.events.subscribe(EventName.rootTakeHomePayChanged, callback);
-  }
+  subscribe(callback: () => void): () => void {
+    const unsubscribe = this.eventEmitter.subscribeAllEvents(callback);
 
-  subscribeCategoriesChange(callback: () => void) {
-    return this.events.subscribe(EventName.rootCategoriesChanged, callback);
-  }
+    this.disposers.push(unsubscribe);
 
-  subscribeAllChange(callback: () => void) {
-    return this.events.subscribeAllEvents(callback);
+    return unsubscribe;
   }
 
   dispose(): void {
-    this.#categories.forEach(category => category.dispose());
+    this.disposers.forEach(dispose => dispose());
+    this.disposers = [];
 
-    this.events.dispose();
+    this.eventEmitter.dispose();
   }
 
   getCategory(uuid: string): Category | undefined {

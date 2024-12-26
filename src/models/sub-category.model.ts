@@ -1,11 +1,11 @@
-import type { JSONSerializable } from "./serializable.model";
-import type { Disposable } from "./disposable.model";
-import EventBus from "../utils/event-bus";
-import EventName from "../config/event-name";
+import type { JSONSerializable } from "./json-serializable.model";
+import type { Comparable } from "./comparable.model";
+import EventEmitter from "../utils/event-emitter";
+import { EventName } from "../config/event-name";
 
-export default class SubCategory implements JSONSerializable, Disposable {
+export default class SubCategory implements JSONSerializable, Comparable<SubCategory> {
   readonly uuid: string;
-  private readonly events = EventBus.getInstance();
+  private readonly eventEmitter = EventEmitter.getInstance();
 
   private constructor(
     public name: string,
@@ -33,25 +33,16 @@ export default class SubCategory implements JSONSerializable, Disposable {
 
   setName(name: string): void {
     this.name = name;
-    this.events.emit(EventName.subCategoryNameChangedOf(this.uuid));
+    this.eventEmitter.emit(EventName.Change);
   }
 
   setBudget(amount: number): void {
     this.budget = amount;
-    this.events.emit(EventName.subCategoryBudgetChangedOf(this.uuid));
+    this.eventEmitter.emit(EventName.Change);
   }
 
-  subscribeNameChange(callback: () => void): () => void {
-    return this.events.subscribe(EventName.subCategoryNameChangedOf(this.uuid), callback);
-  }
-
-  subscribeBudgetChange(callback: () => void): () => void {
-    return this.events.subscribe(EventName.subCategoryBudgetChangedOf(this.uuid), callback);
-  }
-
-  dispose(): void {
-    this.events.unsubscribeEvent(EventName.subCategoryNameChangedOf(this.uuid));
-    this.events.unsubscribeEvent(EventName.subCategoryBudgetChangedOf(this.uuid));
+  diff(to: SubCategory): boolean {
+    return this.name !== to.name || this.budget !== to.budget;
   }
 
   get isEmpty(): boolean {
