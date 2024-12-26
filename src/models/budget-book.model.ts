@@ -1,9 +1,9 @@
-import safetyAdd from "../utils/safety-add";
-import Category from "./category.model";
-import type { JSONSerializable } from "./json-serializable.model";
-import type { Disposable } from "./disposable.model";
-import EventEmitter from "../utils/event-emitter";
-import { EventName } from "../config/event-name";
+import safetyAdd from '../utils/safety-add';
+import Category from './category.model';
+import type { JSONSerializable } from './json-serializable.model';
+import type { Disposable } from './disposable.model';
+import EventEmitter from '../utils/event-emitter';
+import { EventName } from '../config/event-name';
 
 /**
  * NOTE: 가계부는 카테고리를 최소 한 개 가지고 있어야 합니다.
@@ -15,9 +15,9 @@ export default class BudgetBook implements JSONSerializable, Disposable {
 
   private constructor(
     public takeHomePay: number,
-    categories: Category[],
+    categories: Category[]
   ) {
-    this.#categories = new Map(categories.map(category => [category.uuid, category]));
+    this.#categories = new Map(categories.map((category) => [category.uuid, category]));
   }
 
   static create(): BudgetBook {
@@ -27,13 +27,16 @@ export default class BudgetBook implements JSONSerializable, Disposable {
   static fromJSON(json: string): BudgetBook {
     const { takeHomePay, categories } = JSON.parse(json);
 
-    return new BudgetBook(takeHomePay, categories.map((json: string) => Category.fromJSON(json)));
+    return new BudgetBook(
+      takeHomePay,
+      categories.map((json: string) => Category.fromJSON(json))
+    );
   }
 
   toJSON(): string {
     return JSON.stringify({
       takeHomePay: this.takeHomePay,
-      categories: this.categories.map(category => category.toJSON()),
+      categories: this.categories.map((category) => category.toJSON()),
     });
   }
 
@@ -62,7 +65,7 @@ export default class BudgetBook implements JSONSerializable, Disposable {
     }
 
     const target = this.#categories.get(uuid)!;
-    if(!target.isEmpty) {
+    if (!target.isEmpty) {
       const isConfirmed = confirm('카테고리에 입력된 데이터가 모두 삭제됩니다. 정말 삭제하시겠습니까?');
       if (!isConfirmed) {
         return;
@@ -83,7 +86,7 @@ export default class BudgetBook implements JSONSerializable, Disposable {
   }
 
   dispose(): void {
-    this.disposers.forEach(dispose => dispose());
+    this.disposers.forEach((dispose) => dispose());
     this.disposers = [];
 
     this.eventEmitter.dispose();

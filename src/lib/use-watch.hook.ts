@@ -4,15 +4,15 @@ import { useBudgetBook } from './budget-book.context';
 import type { Comparable } from '../models/comparable.model';
 
 export function useWatchCategory(categoryUUID: string) {
-  return useWatchBudgetBook(budgetBook => budgetBook.getCategory(categoryUUID))
+  return useWatchBudgetBook((budgetBook) => budgetBook.getCategory(categoryUUID));
 }
 
 export function useWatchSubcategory(categoryUUID: string, SubcategoryUUID: string) {
-  return useWatchBudgetBook(budgetBook => budgetBook.getCategory(categoryUUID)?.getSubcategory(SubcategoryUUID))
+  return useWatchBudgetBook((budgetBook) => budgetBook.getCategory(categoryUUID)?.getSubcategory(SubcategoryUUID));
 }
 
 function useWatchBudgetBook<Target extends Comparable<unknown>>(
-  selector: (data: BudgetBook) => Target | undefined,
+  selector: (data: BudgetBook) => Target | undefined
 ): Target | undefined {
   const budgetBook = useBudgetBook();
   const [watched, setWatched] = useState<Target | undefined>(selector(budgetBook));

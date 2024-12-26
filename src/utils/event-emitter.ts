@@ -14,9 +14,9 @@ export default class EventEmitter {
 
   emit(event: string) {
     const callbacks = this.listeners.get(event);
-    callbacks?.forEach(callback => callback());
+    callbacks?.forEach((callback) => callback());
 
-    this.allEventsListeners.forEach(callback => callback());
+    this.allEventsListeners.forEach((callback) => callback());
   }
 
   subscribe(event: string, callback: () => void): () => void {

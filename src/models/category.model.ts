@@ -1,9 +1,9 @@
-import safetyAdd from "../utils/safety-add";
-import type { JSONSerializable } from "./json-serializable.model";
-import type { Comparable } from "./comparable.model";
-import Subcategory from "./subcategory.model";
-import EventEmitter from "../utils/event-emitter";
-import { EventName } from "../config/event-name";
+import safetyAdd from '../utils/safety-add';
+import type { JSONSerializable } from './json-serializable.model';
+import type { Comparable } from './comparable.model';
+import Subcategory from './subcategory.model';
+import EventEmitter from '../utils/event-emitter';
+import { EventName } from '../config/event-name';
 
 /**
  * NOTE: 카테고리는 하위 카테고리를 최소 한 개 가지고 있어야 합니다.
@@ -15,10 +15,10 @@ export default class Category implements JSONSerializable, Comparable<Category> 
 
   private constructor(
     public name: string,
-    subcategories: Subcategory[],
+    subcategories: Subcategory[]
   ) {
     this.uuid = crypto.randomUUID();
-    this.#subcategories = new Map(subcategories.map(Subcategory => [Subcategory.uuid, Subcategory]));
+    this.#subcategories = new Map(subcategories.map((Subcategory) => [Subcategory.uuid, Subcategory]));
   }
 
   static create(): Category {
@@ -28,13 +28,16 @@ export default class Category implements JSONSerializable, Comparable<Category> 
   static fromJSON(json: string): Category {
     const { name, subcategories } = JSON.parse(json);
 
-    return new Category(name, subcategories.map((json: string) => Subcategory.fromJSON(json)));
+    return new Category(
+      name,
+      subcategories.map((json: string) => Subcategory.fromJSON(json))
+    );
   }
 
   toJSON(): string {
     return JSON.stringify({
       name: this.name,
-      subcategories: this.subcategories.map(Subcategory => Subcategory.toJSON()),
+      subcategories: this.subcategories.map((Subcategory) => Subcategory.toJSON()),
     });
   }
 
@@ -63,7 +66,7 @@ export default class Category implements JSONSerializable, Comparable<Category> 
     }
 
     const target = this.#subcategories.get(uuid)!;
-    if(!target.isEmpty) {
+    if (!target.isEmpty) {
       const isConfirmed = confirm('하위 카테고리에 입력된 데이터가 모두 삭제됩니다. 정말 삭제하시겠습니까?');
       if (!isConfirmed) {
         return;
@@ -80,7 +83,7 @@ export default class Category implements JSONSerializable, Comparable<Category> 
       this.name !== to.name ||
       this.subcategories.length !== to.subcategories.length ||
       this.subcategories.some((Subcategory, index) => Subcategory.diff(to.subcategories[index]))
-    )
+    );
   }
 
   getSubcategory(uuid: string): Subcategory | undefined {
@@ -96,6 +99,6 @@ export default class Category implements JSONSerializable, Comparable<Category> 
   }
 
   get isEmpty(): boolean {
-    return !this.name && (!this.#subcategories.size || this.subcategories.every(Subcategory => Subcategory.isEmpty));
+    return !this.name && (!this.#subcategories.size || this.subcategories.every((Subcategory) => Subcategory.isEmpty));
   }
 }

@@ -1,7 +1,7 @@
-import type { JSONSerializable } from "./json-serializable.model";
-import type { Comparable } from "./comparable.model";
-import EventEmitter from "../utils/event-emitter";
-import { EventName } from "../config/event-name";
+import type { JSONSerializable } from './json-serializable.model';
+import type { Comparable } from './comparable.model';
+import EventEmitter from '../utils/event-emitter';
+import { EventName } from '../config/event-name';
 
 export default class Subcategory implements JSONSerializable, Comparable<Subcategory> {
   readonly uuid: string;
@@ -9,7 +9,7 @@ export default class Subcategory implements JSONSerializable, Comparable<Subcate
 
   private constructor(
     public name: string,
-    public budget: number,
+    public budget: number
   ) {
     this.uuid = crypto.randomUUID();
   }

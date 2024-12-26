@@ -1,10 +1,10 @@
-import {ReactNode, useEffect, useState} from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { BudgetBookContext } from './budget-book.context';
 import BudgetBook from '../models/budget-book.model';
 
 type Props = {
   children: ReactNode;
-}
+};
 
 export default function BudgetBookProvider({ children }: Props) {
   const [budgetBook] = useState(() => {
@@ -21,11 +21,7 @@ export default function BudgetBookProvider({ children }: Props) {
     return budgetBook.dispose;
   }, []);
 
-  return (
-    <BudgetBookContext.Provider value={budgetBook}>
-      {children}
-    </BudgetBookContext.Provider>
-  );
+  return <BudgetBookContext.Provider value={budgetBook}>{children}</BudgetBookContext.Provider>;
 }
 
 const LOCAL_STORAGE_KEY = 'budget-book';
