@@ -1,0 +1,13 @@
+.root {
+  position: relative;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 4px;
+  background-color: #eef5ff;
+}
+
+.removeButton {
+  position: absolute;
+  top: 8px;
+  right: 15px;
+}
