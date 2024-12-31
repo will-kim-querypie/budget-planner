@@ -13,25 +13,20 @@ type Props = {
 };
 
 export default function Category({ category, onClickRemove }: Props) {
-  const [name, subCategories, totalBudget] = useWatch(category, (category) => [
-    category.name,
-    category.subcategories,
-    category.totalBudget,
-  ]);
+  const [name, subCategories] = useWatch(category, (category) => [category.name, category.subcategories]);
 
   if (!category) {
     return null;
   }
   return (
     <div className={styles.root}>
-      totalBudget: {totalBudget}
       <div className={styles.toolbar}>
         <Field label='카테고리 이름'>
           <Input
             placeholder='이름을 입력하세요'
             value={name}
             onChange={(e) => {
-              category.name = e.target.value;
+              category.setName(e.target.value);
             }}
           />
         </Field>

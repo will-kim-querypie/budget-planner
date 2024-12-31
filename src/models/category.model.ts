@@ -15,7 +15,7 @@ export default class Category extends ObservableState<State> implements JSONSeri
   readonly uuid: string;
 
   private constructor(name: string, subcategories: Subcategory[]) {
-    super(Symbol('category'), {
+    super({
       name,
       _subcategories: new Map(subcategories.map((subcategory) => [subcategory.uuid, subcategory])),
     });
@@ -85,7 +85,7 @@ export default class Category extends ObservableState<State> implements JSONSeri
     return this.get('name');
   }
 
-  set name(name: string) {
+  setName(name: string) {
     this.set('name', name);
   }
 

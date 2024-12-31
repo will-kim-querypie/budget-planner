@@ -24,7 +24,7 @@ export default function Subcategory({ subcategory, onClickRemove }: Props) {
           placeholder='이름을 입력하세요'
           value={name}
           onChange={(e) => {
-            subcategory.name = e.target.value;
+            subcategory.setName(e.target.value);
           }}
         />
       </Field>
@@ -33,7 +33,7 @@ export default function Subcategory({ subcategory, onClickRemove }: Props) {
         placeholder='금액을 입력하세요'
         value={budget}
         onChange={(value) => {
-          subcategory.budget = value;
+          subcategory.setBudget(value);
         }}
       />
 

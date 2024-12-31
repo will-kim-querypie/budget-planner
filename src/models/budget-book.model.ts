@@ -13,7 +13,7 @@ interface State {
  */
 export default class BudgetBook extends ObservableState<State> implements JSONSerializable {
   private constructor(takeHomePay: number, categories: Category[]) {
-    super(Symbol('budget-book'), {
+    super({
       takeHomePay,
       _categories: new Map(categories.map((category) => [category.uuid, category])),
     });
@@ -81,7 +81,7 @@ export default class BudgetBook extends ObservableState<State> implements JSONSe
     return this.get('takeHomePay');
   }
 
-  set takeHomePay(takeHomePay: number) {
+  setTakeHomePay(takeHomePay: number) {
     this.set('takeHomePay', takeHomePay);
   }
 

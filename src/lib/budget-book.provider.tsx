@@ -15,12 +15,12 @@ export default function BudgetBookProvider({ children }: Props) {
   });
 
   useEffect(() => {
-    const unsubscribe = ObservableState.subscribeAll(() => {
+    const unsubscribe = ObservableState.subscribe(() => {
       localStorage.setItem(LOCAL_STORAGE_KEY, budgetBook.toJSON());
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [budgetBook]);
 
   return <BudgetBookContext.Provider value={budgetBook}>{children}</BudgetBookContext.Provider>;
 }

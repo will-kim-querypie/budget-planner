@@ -14,7 +14,7 @@ export default function Income() {
           placeholder='실수령을 입력하세요'
           value={takeHomePay}
           onChange={(value) => {
-            book.takeHomePay = value;
+            book.setTakeHomePay(value);
           }}
         />
       </Field>

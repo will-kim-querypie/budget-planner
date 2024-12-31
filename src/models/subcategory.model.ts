@@ -10,10 +10,7 @@ export default class Subcategory extends ObservableState<State> implements JSONS
   readonly uuid: string;
 
   private constructor(name: string, budget: number) {
-    super(Symbol('subcategory'), {
-      name,
-      budget,
-    });
+    super({ name, budget });
 
     this.uuid = crypto.randomUUID();
   }
@@ -39,7 +36,7 @@ export default class Subcategory extends ObservableState<State> implements JSONS
     return this.get('name');
   }
 
-  set name(name: string) {
+  setName(name: string) {
     this.set('name', name);
   }
 
@@ -47,7 +44,7 @@ export default class Subcategory extends ObservableState<State> implements JSONS
     return this.get('budget');
   }
 
-  set budget(budget: number) {
+  setBudget(budget: number) {
     this.set('budget', budget);
   }
 

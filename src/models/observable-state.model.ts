@@ -1,19 +1,13 @@
 import EventEmitter from '../utils/event-emitter';
-import type { Disposable } from './disposable.model';
 import type { Observable } from './observable.model';
 
-export default abstract class ObservableState<T extends object> implements Disposable, Observable {
+export default abstract class ObservableState<T extends object> implements Observable {
   private static readonly eventEmitter = new EventEmitter();
-  private static readonly ALL_EVENT = Symbol('all');
+  private static readonly EVENT = { CHANGE: Symbol('change') };
 
   private readonly proxy: T;
-  private disposers: (() => void)[] = [];
 
-  protected constructor(
-    private readonly unique: string | symbol,
-    initialValue: T,
-    observeDepth = 1
-  ) {
+  protected constructor(initialValue: T, observeDepth = 1) {
     this.proxy = this.observeIfCollection(initialValue, observeDepth);
   }
 
@@ -52,7 +46,7 @@ export default abstract class ObservableState<T extends object> implements Dispo
       set: (target, property, value) => {
         target[property as keyof T] = this.observeIfCollection(value, observeDepth - 1);
 
-        this.emitChange();
+        this.emit();
 
         return true;
       },
@@ -68,7 +62,7 @@ export default abstract class ObservableState<T extends object> implements Dispo
           return (...args: Parameters<typeof value>) => {
             const result = value.apply(target, args);
 
-            this.emitChange();
+            this.emit();
 
             return result;
           };
@@ -93,7 +87,7 @@ export default abstract class ObservableState<T extends object> implements Dispo
           return (...args: Parameters<typeof value>) => {
             const result = value.apply(target, args);
 
-            this.emitChange();
+            this.emit();
 
             return result;
           };
@@ -109,9 +103,8 @@ export default abstract class ObservableState<T extends object> implements Dispo
     });
   }
 
-  private emitChange() {
-    ObservableState.eventEmitter.emit(ObservableState.ALL_EVENT);
-    ObservableState.eventEmitter.emit(this.unique);
+  private emit() {
+    ObservableState.eventEmitter.emit(ObservableState.EVENT.CHANGE);
   }
 
   protected set<K extends keyof T>(key: K, value: T[K]): void {
@@ -122,21 +115,12 @@ export default abstract class ObservableState<T extends object> implements Dispo
     return this.proxy[key];
   }
 
-  static subscribeAll(callback: () => void): () => void {
-    return ObservableState.eventEmitter.subscribe(ObservableState.ALL_EVENT, callback);
-  }
-
   subscribe(callback: () => void): () => void {
-    const unsubscribe = ObservableState.eventEmitter.subscribe(this.unique, callback);
-
-    this.disposers.push(unsubscribe);
-
-    return unsubscribe;
+    return ObservableState.eventEmitter.subscribe(ObservableState.EVENT.CHANGE, callback);
   }
 
-  dispose() {
-    this.disposers.forEach((dispose) => dispose());
-    this.disposers = [];
+  static subscribe(callback: () => void): () => void {
+    return ObservableState.eventEmitter.subscribe(ObservableState.EVENT.CHANGE, callback);
   }
 }
 
