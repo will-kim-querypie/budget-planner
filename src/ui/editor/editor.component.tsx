@@ -1,12 +1,12 @@
-import { useBudgetBook } from '@/lib/budget-book.context';
+import { useBudgetPlanner } from '../../lib/budget-planner.context';
 import useWatch from '@/lib/use-watch.hook';
 import styles from './editor.module.css';
 import Income from './income.component';
 import Category from './category.component';
 
 export default function Editor() {
-  const book = useBudgetBook();
-  const categories = useWatch(book, (book) => book.categories);
+  const planner = useBudgetPlanner();
+  const categories = useWatch(planner, (planner) => planner.categories);
 
   return (
     <div className={styles.root}>
@@ -19,7 +19,7 @@ export default function Editor() {
           <Category
             key={category.uuid}
             category={category}
-            onClickRemove={showRemoveButton ? () => book.removeCategory(category.uuid) : undefined}
+            onClickRemove={showRemoveButton ? () => planner.removeCategory(category.uuid) : undefined}
           />
         );
       })}

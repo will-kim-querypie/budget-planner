@@ -11,7 +11,7 @@ interface State {
 /**
  * NOTE: 가계부는 카테고리를 최소 한 개 가지고 있어야 합니다.
  */
-export default class BudgetBook extends ObservableState<State> implements JSONSerializable {
+export default class BudgetPlanner extends ObservableState<State> implements JSONSerializable {
   private constructor(takeHomePay: number, categories: Category[]) {
     super({
       takeHomePay,
@@ -19,14 +19,14 @@ export default class BudgetBook extends ObservableState<State> implements JSONSe
     });
   }
 
-  static create(): BudgetBook {
-    return new BudgetBook(0, [Category.create()]);
+  static create(): BudgetPlanner {
+    return new BudgetPlanner(0, [Category.create()]);
   }
 
-  static fromJSON(json: string): BudgetBook {
+  static fromJSON(json: string): BudgetPlanner {
     const { takeHomePay, categories } = JSON.parse(json);
 
-    return new BudgetBook(
+    return new BudgetPlanner(
       takeHomePay,
       categories.map((json: string) => Category.fromJSON(json))
     );
