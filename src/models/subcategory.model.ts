@@ -1,15 +1,20 @@
 import type { JSONSerializable } from './json-serializable.model';
-import EventEmitter from '../utils/event-emitter';
-import { EventName } from '../config/event-name';
+import ObservableState from './observable-state.model';
 
-export default class Subcategory implements JSONSerializable {
+interface State {
+  name: string;
+  budget: number;
+}
+
+export default class Subcategory extends ObservableState<State> implements JSONSerializable {
   readonly uuid: string;
-  private readonly eventEmitter = EventEmitter.getInstance();
 
-  private constructor(
-    public name: string,
-    public budget: number
-  ) {
+  private constructor(name: string, budget: number) {
+    super(Symbol('subcategory'), {
+      name,
+      budget,
+    });
+
     this.uuid = crypto.randomUUID();
   }
 
@@ -25,22 +30,28 @@ export default class Subcategory implements JSONSerializable {
 
   toJSON(): string {
     return JSON.stringify({
-      name: this.name,
-      budget: this.budget,
+      name: this.get('name'),
+      budget: this.get('budget'),
     });
   }
 
-  setName(name: string): void {
-    this.name = name;
-    this.eventEmitter.emit(EventName.Change);
+  get name(): string {
+    return this.get('name');
   }
 
-  setBudget(amount: number): void {
-    this.budget = amount;
-    this.eventEmitter.emit(EventName.Change);
+  set name(name: string) {
+    this.set('name', name);
+  }
+
+  get budget(): number {
+    return this.get('budget');
+  }
+
+  set budget(budget: number) {
+    this.set('budget', budget);
   }
 
   get isEmpty(): boolean {
-    return !this.name && !this.budget;
+    return !this.get('name') && !this.get('budget');
   }
 }

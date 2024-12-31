@@ -1,34 +1,37 @@
-import useWatchBudgetBook from '@/lib/use-watch-budget-book.hook';
-import { useBudgetBook } from '@/lib/budget-book.context';
+import useWatch from '@/lib/use-watch.hook';
+import CategoryModel from '@/models/category.model';
 import styles from './category.module.css';
 import Subcategory from './subcategory.component';
 import { Button, Field, Input } from '../common';
 
 type Props = {
-  uuid: string;
-  onClickRemove: () => void;
+  category: CategoryModel;
+  /**
+   * truthy일 경우 삭제 버튼을 표시합니다.
+   */
+  onClickRemove?: () => void;
 };
 
-export default function Category({ uuid, onClickRemove }: Props) {
-  const category = useBudgetBook().getCategory(uuid);
-  const watched = useWatchBudgetBook((book) => ({
-    categoriesLength: book.categories.length,
-    name: book.getCategory(uuid)?.name ?? '',
-    subCategories: book.getCategory(uuid)?.subcategories ?? [],
-  }));
+export default function Category({ category, onClickRemove }: Props) {
+  const [name, subCategories, totalBudget] = useWatch(category, (category) => [
+    category.name,
+    category.subcategories,
+    category.totalBudget,
+  ]);
 
   if (!category) {
     return null;
   }
   return (
     <div className={styles.root}>
+      totalBudget: {totalBudget}
       <div className={styles.toolbar}>
         <Field label='카테고리 이름'>
           <Input
             placeholder='이름을 입력하세요'
-            value={watched.name}
+            value={name}
             onChange={(e) => {
-              category.setName(e.target.value);
+              category.name = e.target.value;
             }}
           />
         </Field>
@@ -39,24 +42,24 @@ export default function Category({ uuid, onClickRemove }: Props) {
         >
           서브 카테고리 추가
         </Button>
-        {watched.categoriesLength > 1 && (
+        {onClickRemove && (
           <Button variant='danger' size='sm' className={styles.removeButton} onClick={onClickRemove}>
             삭제
           </Button>
         )}
       </div>
-
       <div className={styles.subcategories}>
-        {watched.subCategories.map((subcategory) => (
-          <Subcategory
-            key={uuid + subcategory.uuid}
-            categoryUuid={uuid}
-            uuid={subcategory.uuid}
-            onClickRemove={() => {
-              category.removeSubcategory(subcategory.uuid);
-            }}
-          />
-        ))}
+        {subCategories.map((subcategory) => {
+          const showRemoveButton = subCategories.length > 1;
+
+          return (
+            <Subcategory
+              key={category.uuid + subcategory.uuid}
+              subcategory={subcategory}
+              onClickRemove={showRemoveButton ? () => category.removeSubcategory(subcategory.uuid) : undefined}
+            />
+          );
+        })}
       </div>
     </div>
   );

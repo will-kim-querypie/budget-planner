@@ -1,23 +1,26 @@
 import safetyAdd from '../utils/safety-add';
 import type { JSONSerializable } from './json-serializable.model';
 import Subcategory from './subcategory.model';
-import EventEmitter from '../utils/event-emitter';
-import { EventName } from '../config/event-name';
+import ObservableState from './observable-state.model';
+
+interface State {
+  name: string;
+  _subcategories: Map<string, Subcategory>;
+}
 
 /**
  * NOTE: 카테고리는 하위 카테고리를 최소 한 개 가지고 있어야 합니다.
  */
-export default class Category implements JSONSerializable {
+export default class Category extends ObservableState<State> implements JSONSerializable {
   readonly uuid: string;
-  readonly #subcategories = new Map<string, Subcategory>();
-  private readonly eventEmitter = EventEmitter.getInstance();
 
-  private constructor(
-    public name: string,
-    subcategories: Subcategory[]
-  ) {
+  private constructor(name: string, subcategories: Subcategory[]) {
+    super(Symbol('category'), {
+      name,
+      _subcategories: new Map(subcategories.map((subcategory) => [subcategory.uuid, subcategory])),
+    });
+
     this.uuid = crypto.randomUUID();
-    this.#subcategories = new Map(subcategories.map((subcategory) => [subcategory.uuid, subcategory]));
   }
 
   static create(): Category {
@@ -35,36 +38,31 @@ export default class Category implements JSONSerializable {
 
   toJSON(): string {
     return JSON.stringify({
-      name: this.name,
+      name: this.get('name'),
       subcategories: this.subcategories.map((subcategory) => subcategory.toJSON()),
     });
   }
 
-  setName(name: string): void {
-    this.name = name;
-
-    this.eventEmitter.emit(EventName.Change);
-  }
-
   addSubcategory(): void {
-    const subcategory = Subcategory.create();
-    this.#subcategories.set(subcategory.uuid, subcategory);
+    const newSubcategory = Subcategory.create();
 
-    this.eventEmitter.emit(EventName.ChildrenChange);
+    this.get('_subcategories').set(newSubcategory.uuid, newSubcategory);
   }
 
   removeSubcategory(uuid: string): void {
-    if (this.#subcategories.size === 1) {
+    const subcategories = this.get('_subcategories');
+
+    if (subcategories.size === 1) {
       alert('하나 이상의 하위 카테고리가 필요합니다.');
       return;
     }
 
-    if (!this.#subcategories.has(uuid)) {
+    if (!subcategories.has(uuid)) {
       alert('삭제할 하위 카테고리를 찾을 수 없습니다.');
       return;
     }
 
-    const target = this.#subcategories.get(uuid)!;
+    const target = subcategories.get(uuid)!;
     if (!target.isEmpty) {
       const isConfirmed = confirm('하위 카테고리에 입력된 데이터가 모두 삭제됩니다. 정말 삭제하시겠습니까?');
       if (!isConfirmed) {
@@ -72,24 +70,33 @@ export default class Category implements JSONSerializable {
       }
     }
 
-    this.#subcategories.delete(uuid);
-
-    this.eventEmitter.emit(EventName.ChildrenChange);
+    subcategories.delete(uuid);
   }
 
   getSubcategory(uuid: string): Subcategory | undefined {
-    return this.#subcategories.get(uuid);
+    return this.get('_subcategories').get(uuid);
   }
 
   get subcategories(): Subcategory[] {
-    return [...this.#subcategories.values()];
+    return [...this.get('_subcategories').values()];
+  }
+
+  get name(): string {
+    return this.get('name');
+  }
+
+  set name(name: string) {
+    this.set('name', name);
   }
 
   get totalBudget(): number {
-    return this.subcategories.reduce((acc, Subcategory) => safetyAdd(acc, Subcategory.budget), 0);
+    return this.subcategories.reduce((acc, subcategory) => safetyAdd(acc, subcategory.budget), 0);
   }
 
   get isEmpty(): boolean {
-    return !this.name && (!this.#subcategories.size || this.subcategories.every((subcategory) => subcategory.isEmpty));
+    return (
+      !this.get('name') &&
+      (!this.get('_subcategories').size || this.subcategories.every((subcategory) => subcategory.isEmpty))
+    );
   }
 }

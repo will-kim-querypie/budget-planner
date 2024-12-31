@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react';
-import BudgetBook from '../models/budget-book.model';
-import { useBudgetBook } from './budget-book.context';
+import type { Observable } from '../models/observable.model';
 
-export default function useWatchBudgetBook<Target>(
-  selector: (data: BudgetBook) => Target,
-  diff: (prev: Target, next: Target) => boolean = defaultDiff
-): Target {
-  const budgetBook = useBudgetBook();
-  const [watched, setWatched] = useState<Target>(selector(budgetBook));
+export default function useWatch<Source extends Observable, Selected>(
+  source: Source,
+  selector: (data: Source) => Selected,
+  diff: (prev: Selected, next: Selected) => boolean = defaultDiff
+): Selected {
+  const [watched, setWatched] = useState<Selected>(selector(source));
 
   /**
    * 주입받은 selector, diff는 변경이 없다고 가정
    */
   useEffect(() => {
-    const unsubscribe = budgetBook.subscribe(() => {
-      const next = selector(budgetBook);
+    const unsubscribe = source.subscribe(() => {
+      const next = selector(source);
 
       if (diff(watched, next)) {
         setWatched(next);
@@ -22,7 +21,7 @@ export default function useWatchBudgetBook<Target>(
     });
 
     return () => unsubscribe();
-  }, [budgetBook, watched]);
+  }, [source, watched]);
 
   return watched;
 }

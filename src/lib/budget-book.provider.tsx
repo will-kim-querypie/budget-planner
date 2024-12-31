@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { BudgetBookContext } from './budget-book.context';
 import BudgetBook from '../models/budget-book.model';
+import ObservableState from '../models/observable-state.model';
 
 type Props = {
   children: ReactNode;
@@ -14,11 +15,11 @@ export default function BudgetBookProvider({ children }: Props) {
   });
 
   useEffect(() => {
-    budgetBook.subscribe(() => {
+    const unsubscribe = ObservableState.subscribeAll(() => {
       localStorage.setItem(LOCAL_STORAGE_KEY, budgetBook.toJSON());
     });
 
-    return () => budgetBook.dispose();
+    return () => unsubscribe();
   }, []);
 
   return <BudgetBookContext.Provider value={budgetBook}>{children}</BudgetBookContext.Provider>;
