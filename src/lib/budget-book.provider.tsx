@@ -18,7 +18,7 @@ export default function BudgetBookProvider({ children }: Props) {
       localStorage.setItem(LOCAL_STORAGE_KEY, budgetBook.toJSON());
     });
 
-    return budgetBook.dispose;
+    return () => budgetBook.dispose();
   }, []);
 
   return <BudgetBookContext.Provider value={budgetBook}>{children}</BudgetBookContext.Provider>;

@@ -1,6 +1,5 @@
 import safetyAdd from '../utils/safety-add';
 import type { JSONSerializable } from './json-serializable.model';
-import type { Comparable } from './comparable.model';
 import Subcategory from './subcategory.model';
 import EventEmitter from '../utils/event-emitter';
 import { EventName } from '../config/event-name';
@@ -8,7 +7,7 @@ import { EventName } from '../config/event-name';
 /**
  * NOTE: 카테고리는 하위 카테고리를 최소 한 개 가지고 있어야 합니다.
  */
-export default class Category implements JSONSerializable, Comparable<Category> {
+export default class Category implements JSONSerializable {
   readonly uuid: string;
   readonly #subcategories = new Map<string, Subcategory>();
   private readonly eventEmitter = EventEmitter.getInstance();
@@ -18,7 +17,7 @@ export default class Category implements JSONSerializable, Comparable<Category> 
     subcategories: Subcategory[]
   ) {
     this.uuid = crypto.randomUUID();
-    this.#subcategories = new Map(subcategories.map((Subcategory) => [Subcategory.uuid, Subcategory]));
+    this.#subcategories = new Map(subcategories.map((subcategory) => [subcategory.uuid, subcategory]));
   }
 
   static create(): Category {
@@ -37,7 +36,7 @@ export default class Category implements JSONSerializable, Comparable<Category> 
   toJSON(): string {
     return JSON.stringify({
       name: this.name,
-      subcategories: this.subcategories.map((Subcategory) => Subcategory.toJSON()),
+      subcategories: this.subcategories.map((subcategory) => subcategory.toJSON()),
     });
   }
 
@@ -78,14 +77,6 @@ export default class Category implements JSONSerializable, Comparable<Category> 
     this.eventEmitter.emit(EventName.ChildrenChange);
   }
 
-  diff(to: Category): boolean {
-    return (
-      this.name !== to.name ||
-      this.subcategories.length !== to.subcategories.length ||
-      this.subcategories.some((Subcategory, index) => Subcategory.diff(to.subcategories[index]))
-    );
-  }
-
   getSubcategory(uuid: string): Subcategory | undefined {
     return this.#subcategories.get(uuid);
   }
@@ -99,6 +90,6 @@ export default class Category implements JSONSerializable, Comparable<Category> 
   }
 
   get isEmpty(): boolean {
-    return !this.name && (!this.#subcategories.size || this.subcategories.every((Subcategory) => Subcategory.isEmpty));
+    return !this.name && (!this.#subcategories.size || this.subcategories.every((subcategory) => subcategory.isEmpty));
   }
 }

@@ -1,9 +1,8 @@
 import type { JSONSerializable } from './json-serializable.model';
-import type { Comparable } from './comparable.model';
 import EventEmitter from '../utils/event-emitter';
 import { EventName } from '../config/event-name';
 
-export default class Subcategory implements JSONSerializable, Comparable<Subcategory> {
+export default class Subcategory implements JSONSerializable {
   readonly uuid: string;
   private readonly eventEmitter = EventEmitter.getInstance();
 
@@ -39,10 +38,6 @@ export default class Subcategory implements JSONSerializable, Comparable<Subcate
   setBudget(amount: number): void {
     this.budget = amount;
     this.eventEmitter.emit(EventName.Change);
-  }
-
-  diff(to: Subcategory): boolean {
-    return this.name !== to.name || this.budget !== to.budget;
   }
 
   get isEmpty(): boolean {
